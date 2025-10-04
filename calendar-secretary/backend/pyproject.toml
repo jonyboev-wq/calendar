@@ -1,0 +1,35 @@
+[tool.poetry]
+name = "calendar-secretary-backend"
+version = "0.1.0"
+description = "Smart calendar secretary backend"
+authors = ["AI Assistant <assistant@example.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.110.0"
+uvicorn = {extras=["standard"], version="^0.29.0"}
+sqlalchemy = "^2.0.29"
+psycopg2-binary = "^2.9.9"
+python-dotenv = "^1.0.1"
+pydantic = "^1.10.14"
+ortools = "^9.8"
+cryptography = "^42.0.5"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.0.0"
+httpx = "^0.27.0"
+
+[tool.black]
+line-length = 88
+
+[tool.ruff]
+line-length = 88
+select = ["E", "F", "I", "B"]
+
+[tool.mypy]
+python_version = "3.11"
+ignore_missing_imports = true
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
