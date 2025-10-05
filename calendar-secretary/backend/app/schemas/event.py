@@ -53,7 +53,7 @@ class EventBase(BaseModel):
     calendar_id: str | None = None
     external_ids: dict[str, str | None] | None = None
     constraints: ConstraintOptions | None = None
-    metadata: MetadataOptions | None = None
+    metadata_json: MetadataOptions | None = Field(default=None, alias="metadata")
     family_key: str | None = None
     pomodoro_opt_in: bool = False
     depends_on: list[DependencyRef] = Field(default_factory=list)
@@ -64,6 +64,9 @@ class EventBase(BaseModel):
         if not 1 <= value <= 10:
             raise ValueError("priority must be between 1 and 10")
         return value
+
+    class Config:
+        allow_population_by_field_name = True
 
 
 class EventCreate(EventBase):
@@ -81,3 +84,4 @@ class EventSchema(EventBase):
 
     class Config:
         orm_mode = True
+        allow_population_by_field_name = True
