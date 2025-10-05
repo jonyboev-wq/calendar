@@ -20,4 +20,4 @@ def test_pomodoro_flag_is_acknowledged():
     event = DummyEvent(180, pomodoro_opt_in=True)
     solver = HeuristicPlanner()
     plan = solver.solve([event], {}, settings, datetime.utcnow(), datetime.utcnow() + timedelta(hours=6))
-    assert plan.scheduled[0].event_id == str(event.id)
+    assert str(plan.scheduled[0].event_id) == str(event.id)

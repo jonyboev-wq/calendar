@@ -24,4 +24,4 @@ def test_family_weight_affects_order():
     ]
     solver = HeuristicPlanner()
     plan = solver.solve(events, families, None, datetime.utcnow(), datetime.utcnow() + timedelta(hours=4))
-    assert plan.scheduled[0].event_id == str(events[0].id)
+    assert str(plan.scheduled[0].event_id) == str(events[0].id)

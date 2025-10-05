@@ -4,6 +4,7 @@ from typing import Any
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
 
 from app.core.db import get_db
@@ -37,10 +38,12 @@ async def create_event(payload: EventCreate, db: Session = Depends(get_db)) -> E
     user = db.query(User).first()
     if user is None:
         raise HTTPException(status_code=404, detail="User context missing")
-    event = Event(user_id=user.id, **payload.dict(exclude={"depends_on"}))
+    event_data = jsonable_encoder(payload, exclude={"depends_on"})
+    event = Event(user_id=user.id, **event_data)
     db.add(event)
     db.flush()
-    _apply_dependencies(event, [dep.dict() for dep in payload.depends_on], db)
+    serialized_dependencies = jsonable_encoder(payload.depends_on or [])
+    _apply_dependencies(event, serialized_dependencies, db)
     db.commit()
     db.refresh(event)
     return EventSchema.from_orm(event)
@@ -55,11 +58,12 @@ async def update_event(
     event = db.query(Event).filter(Event.id == event_id).one_or_none()
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
-    data = payload.dict(exclude_unset=True, exclude={"depends_on"})
+    data = jsonable_encoder(payload, exclude_unset=True, exclude={"depends_on"})
     for key, value in data.items():
         setattr(event, key, value)
     if "depends_on" in payload.__fields_set__:
-        _apply_dependencies(event, [dep.dict() for dep in payload.depends_on], db)
+        serialized_dependencies = jsonable_encoder(payload.depends_on or [])
+        _apply_dependencies(event, serialized_dependencies, db)
     db.add(event)
     db.commit()
     db.refresh(event)
