@@ -3,17 +3,23 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-ENV POETRY_VERSION=1.7.1
+ENV POETRY_VERSION=1.7.1 \
+    POETRY_HOME="/opt/poetry" \
+    POETRY_VIRTUALENVS_CREATE=false \
+    POETRY_NO_INTERACTION=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+ENV PATH="$POETRY_HOME/bin:$PATH"
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends build-essential curl && \
-    pip install "poetry==${POETRY_VERSION}" && \
+    curl -sSL https://install.python-poetry.org | python - --version ${POETRY_VERSION} && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 COPY pyproject.toml poetry.lock ./
 
-RUN poetry config virtualenvs.create false && \
-    poetry install --no-interaction --no-ansi --only main
+RUN poetry install --only main --no-ansi
 
 COPY app ./app
 
