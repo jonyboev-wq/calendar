@@ -1,0 +1,22 @@
+# syntax=docker/dockerfile:1
+FROM python:3.11-slim
+
+WORKDIR /app
+
+ENV POETRY_VERSION=1.7.1
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends build-essential curl && \
+    pip install "poetry==${POETRY_VERSION}" && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+COPY pyproject.toml poetry.lock ./
+
+RUN poetry config virtualenvs.create false && \
+    poetry install --no-interaction --no-ansi --only main
+
+COPY app ./app
+
+EXPOSE 8000
+
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
