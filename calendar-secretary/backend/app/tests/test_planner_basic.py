@@ -18,4 +18,4 @@ def test_heuristic_orders_by_priority():
     events = [DummyEvent(60, priority=p) for p in (1, 10, 5)]
     plan = solver.solve(events, {}, None, datetime.utcnow(), datetime.utcnow() + timedelta(hours=5))
     assert isinstance(plan, PlanSolution)
-    assert plan.scheduled[0].event_id in {str(events[1].id)}
+    assert str(plan.scheduled[0].event_id) in {str(events[1].id)}

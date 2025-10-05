@@ -60,21 +60,28 @@ class CPSATSolver:
         chunks = self._build_chunks(events)
 
         intervals = []
-        chunk_vars: dict[str, dict[str, cp_model.IntVar]] = {}
+        chunk_vars: dict[str, dict[str, cp_model.IntVar | cp_model.BoolVar]] = {}
         objective_terms: list[cp_model.LinearExpr] = []
 
         for chunk in chunks:
             start_var = model.NewIntVar(horizon_start, horizon_end, f"start_{chunk.chunk_id}")
             end_var = model.NewIntVar(horizon_start, horizon_end, f"end_{chunk.chunk_id}")
-            interval = model.NewIntervalVar(start_var, chunk.duration, end_var, f"iv_{chunk.chunk_id}")
-            chunk_vars[chunk.chunk_id] = {"start": start_var, "end": end_var}
+            presence_var = model.NewBoolVar(f"present_{chunk.chunk_id}")
+            interval = model.NewOptionalIntervalVar(
+                start_var, chunk.duration, end_var, presence_var, f"iv_{chunk.chunk_id}"
+            )
+            chunk_vars[chunk.chunk_id] = {
+                "start": start_var,
+                "end": end_var,
+                "presence": presence_var,
+            }
             intervals.append(interval)
             if chunk.earliest is not None:
-                model.Add(start_var >= chunk.earliest)
+                model.Add(start_var >= chunk.earliest).OnlyEnforceIf(presence_var)
             if chunk.latest is not None:
-                model.Add(start_var <= chunk.latest)
+                model.Add(start_var <= chunk.latest).OnlyEnforceIf(presence_var)
             weight = int(chunk.priority * settings.objective_weight_priority * 100)
-            objective_terms.append(weight * model.NewBoolVar(f"placed_{chunk.chunk_id}"))
+            objective_terms.append(weight * presence_var)
 
         if intervals:
             model.AddNoOverlap(intervals)
@@ -92,6 +99,9 @@ class CPSATSolver:
 
         scheduled: list[ScheduledChunk] = []
         for chunk in chunks:
+            presence_val = solver.Value(chunk_vars[chunk.chunk_id]["presence"])
+            if presence_val == 0:
+                continue
             start_val = solver.Value(chunk_vars[chunk.chunk_id]["start"])
             end_val = solver.Value(chunk_vars[chunk.chunk_id]["end"])
             scheduled.append(
