@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import Any
 from uuid import UUID
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class ScheduledChunk(BaseModel):
@@ -13,7 +13,10 @@ class ScheduledChunk(BaseModel):
     start: datetime
     end: datetime
     is_break: bool = False
-    metadata: dict[str, Any] | None = None
+    metadata_json: dict[str, Any] | None = Field(default=None, alias="metadata")
+
+    class Config:
+        allow_population_by_field_name = True
 
 
 class PlanSolution(BaseModel):

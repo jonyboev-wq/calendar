@@ -31,7 +31,7 @@ class Event(Base):
     calendar_id = Column(String, nullable=True)
     external_ids = Column(JSON, nullable=True)
     constraints = Column(JSON, nullable=True)
-    metadata = Column(JSON, nullable=True)
+    metadata_json = Column("metadata", JSON, nullable=True)
     family_key = Column(String, nullable=True)
     pomodoro_opt_in = Column(Boolean, default=False, nullable=False)
 
