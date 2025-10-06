@@ -1,25 +1,9 @@
-import { useQuery } from "react-query";
 import { useMemo } from "react";
-
-interface Proposal {
-  event_id: string;
-  suggested_start: string;
-  suggested_end: string;
-  score: number;
-  reasoning: string;
-}
-
-async function fetchProposals(): Promise<Proposal[]> {
-  const response = await fetch("/api/plan/proposals");
-  if (!response.ok) {
-    throw new Error("Failed to load proposals");
-  }
-  const data = await response.json();
-  return data.proposals ?? [];
-}
+import { useQuery } from "react-query";
+import { fetchPlannerProposals, PlannerProposal } from "../api";
 
 export default function PlannerPanel() {
-  const { data, isLoading, error } = useQuery("proposals", fetchProposals);
+  const { data, isLoading, error } = useQuery<PlannerProposal[]>("proposals", fetchPlannerProposals);
   const items = useMemo(() => data ?? [], [data]);
 
   return (
@@ -46,6 +30,9 @@ export default function PlannerPanel() {
           </li>
         ))}
       </ul>
+      {!isLoading && !error && items.length === 0 && (
+        <p className="text-sm text-slate-400">Нет предложений — добавьте задачи, чтобы планировщик что-то подсказал.</p>
+      )}
     </section>
   );
 }

@@ -9,6 +9,7 @@ from app.api import events, plan, sync
 from app.api import families, pomodoro
 from app.core.config import settings
 from app.core import db as db_module
+from app.models.event import UserPomodoroSettings
 from app.models.user import User
 
 logger = logging.getLogger(__name__)
@@ -35,14 +36,17 @@ app.include_router(pomodoro.router, prefix="/api/users", tags=["pomodoro"])
 
 def _ensure_default_user() -> None:
     with db_module.SessionLocal() as session:
-        if session.query(User).first() is None:
-            session.add(
-                User(
-                    email="demo@example.com",
-                    hashed_password="demo",  # Placeholder for demo environments
-                )
+        user = session.query(User).first()
+        if user is None:
+            user = User(
+                email="demo@example.com",
+                hashed_password="demo",  # Placeholder for demo environments
             )
-            session.commit()
+            session.add(user)
+            session.flush()
+        if session.query(UserPomodoroSettings).filter(UserPomodoroSettings.user_id == user.id).first() is None:
+            session.add(UserPomodoroSettings(user_id=user.id))
+        session.commit()
 
 
 def _initialise_database() -> None:
