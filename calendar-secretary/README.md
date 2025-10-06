@@ -54,6 +54,16 @@ docker compose up --build
 The backend is available on http://localhost:8000 and the frontend on
 http://localhost:5173.
 
+#### Проверка успешного запуска
+
+- Убедитесь, что контейнеры находятся в состоянии `running` с помощью
+  `docker compose ps`.
+- Для бэкенда выполните `curl http://localhost:8000/health` и убедитесь, что в
+  ответ приходит `{"status": "ok"}`. Этот эндпоинт объявлен в
+  `app/main.py` и служит простым индикатором готовности сервера.
+- Для фронтенда откройте в браузере http://localhost:5173 — должна загрузиться
+  стартовая страница приложения.
+
 ### Running locally (backend)
 
 ```bash
